@@ -1,0 +1,7 @@
+install bear (build ear) to generate the compile_commands.json
+this file is used by clangd for code navigation, completion, ...
+yay -S bear
+make clean
+bear -- make CC=clang
+this works although it prints an error
+afterwards restart clangd strg+shift+p clangd
