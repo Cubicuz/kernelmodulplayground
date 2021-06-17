@@ -7,6 +7,7 @@
  * This driver is based on the 2.6.3 version of drivers/usb/usb-skeleton.c
  * but has been rewritten to be easier to read and use.
  */
+ // i put this here for easyer access
 
 #include <linux/kernel.h>
 #include <linux/errno.h>

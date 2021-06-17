@@ -1,67 +1,76 @@
+#include "linux/printk.h"
+#include <linux/init.h>
 #include <linux/module.h>
-#include <net/sock.h> 
-#include <linux/netlink.h>
 #include <linux/skbuff.h> 
-#define NETLINK_USER 31
+#include <net/netlink.h>
+#include <net/genetlink.h>
 
-struct sock *nl_sk = NULL;
+enum {
+    DOC_COMMS_A_UNSPEC,
+    DOC_COMMS_A_MSG,
+    __DOC_COMMS_A_MAX,
+};
+#define DOC_COMMS_A_MAX (__DOC_COMMS_A_MAX - 1)
+//attribute policy
+static struct nla_policy doc_comms_genl_policy[DOC_COMMS_A_MAX + 1] = {
+    [DOC_COMMS_A_MSG] = { .type = NLA_NUL_STRING },
+};
 
-static void hello_nl_recv_msg(struct sk_buff *skb)
+
+// handler
+static int doc_comms_echo(struct sk_buff *skb, struct genl_info *info)
 {
-
-    struct nlmsghdr *nlh;
-    int pid;
-    struct sk_buff *skb_out;
-    int msg_size;
-    char *msg = "Hello from kernel";
-    int res;
-
-    printk(KERN_INFO "Entering: %s\n", __FUNCTION__);
-
-    msg_size = strlen(msg);
-
-    nlh = (struct nlmsghdr *)skb->data;
-    printk(KERN_INFO "Netlink received msg payload:%s\n", (char *)nlmsg_data(nlh));
-    pid = nlh->nlmsg_pid; /*pid of sending process */
-
-    skb_out = nlmsg_new(msg_size, 0);
-    if (!skb_out) {
-        printk(KERN_ERR "Failed to allocate new skb\n");
-        return;
-    }
-
-    nlh = nlmsg_put(skb_out, 0, 0, NLMSG_DONE, msg_size, 0);
-    NETLINK_CB(skb_out).dst_group = 0; /* not in mcast group */
-    strncpy(nlmsg_data(nlh), msg, msg_size);
-
-    res = nlmsg_unicast(nl_sk, skb_out, pid);
-    if (res < 0)
-        printk(KERN_INFO "Error while sending bak to user\n");
+    /* message handling code goes here */
+    pr_info("new message\n");
+    return 0;
 }
+// commands
+enum {
+    DOC_COMMS_C_UNSPEC,
+    DOC_COMMS_C_ECHO,
+    __DOC_COMMS_C_MAX,
+};
+#define DOC_COMMS_C_MAX (__DOC_COMMS_C_MAX - 1)
+// operation definition
+static struct genl_ops doc_comms_genl_ops_echo = {
+    .cmd = DOC_COMMS_C_ECHO,
+    .flags = 0,
+    .policy = doc_comms_genl_policy,
+    .doit = doc_comms_echo,
+    .dumpit = NULL,
+};
+
+//family definition
+static struct genl_family doc_comms_genl_family = {
+    .hdrsize = 0,
+    .name = "DOC_COMMS",
+    .version = 1,
+    .maxattr = __DOC_COMMS_A_MAX,
+    .ops = &doc_comms_genl_ops_echo,
+    .n_ops = 1,
+}; 
 
 static int __init hello_init(void)
 {
-    struct netlink_kernel_cfg cfg = {
-        .input = hello_nl_recv_msg,
-    };
-
-    printk("Entering: %s\n", __FUNCTION__);
-    //nl_sk = netlink_kernel_create(&init_net, NETLINK_USER, 0, hello_nl_recv_msg, NULL, THIS_MODULE);
-
-    nl_sk = netlink_kernel_create(&init_net, NETLINK_USER, &cfg);
-    if (!nl_sk) {
-        printk(KERN_ALERT "Error creating socket.\n");
-        return -10;
+    int rc;
+    rc = genl_register_family(&doc_comms_genl_family);
+    if (rc != 0)
+    {
+        pr_info("register family failed %i\n", rc);
+        return rc;
     }
-
+    pr_info("registered family, with id maybe %i\n", doc_comms_genl_family.id);
     return 0;
 }
 
 static void __exit hello_exit(void)
 {
-
-    printk(KERN_INFO "exiting hello module\n");
-    netlink_kernel_release(nl_sk);
+    int rc;
+    rc = genl_unregister_family(&doc_comms_genl_family);
+    if (rc != 0)
+    {
+        pr_info("unregister family failed %i\n", rc);
+    }
 }
 
 module_init(hello_init); module_exit(hello_exit);
