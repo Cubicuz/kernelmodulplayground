@@ -1,3 +1,5 @@
 communication/build/
+communication/.cache/
 userspace/build/
+userspace/.cache/
 *.pdf
