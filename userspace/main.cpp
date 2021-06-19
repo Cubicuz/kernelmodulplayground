@@ -20,6 +20,9 @@ int main(){
     ret = genl_ctrl_resolve(sock, "DOC_COMMS");
     if (ret){
         std::cout << "genl_ctrl_resolve returned " << ret << std::endl;
+        int family = ret;
+        ret = genl_send_simple(sock, family, 1, 1, 0);
+        std::cout << "send simple returned " << ret << std::endl;
     }
     
     

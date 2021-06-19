@@ -32,12 +32,14 @@ enum {
 };
 #define DOC_COMMS_C_MAX (__DOC_COMMS_C_MAX - 1)
 // operation definition
-static struct genl_ops doc_comms_genl_ops_echo = {
-    .cmd = DOC_COMMS_C_ECHO,
-    .flags = 0,
-    .policy = doc_comms_genl_policy,
-    .doit = doc_comms_echo,
-    .dumpit = NULL,
+static const struct genl_ops doc_comms_genl_ops_echo[] = {
+    {
+        .cmd = DOC_COMMS_C_ECHO,
+        .flags = 0,
+        .policy = doc_comms_genl_policy,
+        .doit = doc_comms_echo,
+        .dumpit = NULL,
+    },
 };
 
 //family definition
@@ -46,7 +48,7 @@ static struct genl_family doc_comms_genl_family = {
     .name = "DOC_COMMS",
     .version = 1,
     .maxattr = __DOC_COMMS_A_MAX,
-    .ops = &doc_comms_genl_ops_echo,
+    .ops = doc_comms_genl_ops_echo,
     .n_ops = 1,
 }; 
 
