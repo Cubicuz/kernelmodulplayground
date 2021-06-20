@@ -4,6 +4,7 @@
 #include <linux/skbuff.h> 
 #include <net/netlink.h>
 #include <net/genetlink.h>
+#include "../globals.h"
 
 enum {
     DOC_COMMS_A_UNSPEC,
@@ -24,13 +25,6 @@ static int doc_comms_echo(struct sk_buff *skb, struct genl_info *info)
     pr_info("new message\n");
     return 0;
 }
-// commands
-enum {
-    DOC_COMMS_C_UNSPEC,
-    DOC_COMMS_C_ECHO,
-    __DOC_COMMS_C_MAX,
-};
-#define DOC_COMMS_C_MAX (__DOC_COMMS_C_MAX - 1)
 // operation definition
 static const struct genl_ops doc_comms_genl_ops_echo[] = {
     {
@@ -45,7 +39,7 @@ static const struct genl_ops doc_comms_genl_ops_echo[] = {
 //family definition
 static struct genl_family doc_comms_genl_family = {
     .hdrsize = 0,
-    .name = "DOC_COMMS",
+    .name = my_genl_family_name,
     .version = 1,
     .maxattr = __DOC_COMMS_A_MAX,
     .ops = doc_comms_genl_ops_echo,
