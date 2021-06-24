@@ -22,7 +22,21 @@ static struct nla_policy doc_comms_genl_policy[DOC_COMMS_A_MAX + 1] = {
 static int doc_comms_echo(struct sk_buff *skb, struct genl_info *info)
 {
     /* message handling code goes here */
+    struct genlmsghdr *genlhdr;
+	char *hdr;
+    genlhdr = nlmsg_data(nlmsg_hdr(skb));
+    if (!genlhdr){
+        pr_err("no genlhdr\n");
+        return 0;
+    }
+    hdr = genlmsg_data(genlhdr);
+    if (!hdr){
+        pr_err("no hdr\n");
+        return 0;
+    }
     pr_info("new message\n");
+    pr_warn("blub %s\n", hdr);
+    pr_warn("blib %c\n", hdr[0]);
     return 0;
 }
 // operation definition
@@ -33,6 +47,7 @@ static const struct genl_ops doc_comms_genl_ops_echo[] = {
         .policy = doc_comms_genl_policy,
         .doit = doc_comms_echo,
         .dumpit = NULL,
+        .validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP_STRICT | GENL_DONT_VALIDATE_DUMP,
     },
 };
 

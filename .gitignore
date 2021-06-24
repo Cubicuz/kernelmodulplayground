@@ -3,3 +3,5 @@ communication/.cache/
 userspace/build/
 userspace/.cache/
 *.pdf
+build/
+.cache/
